@@ -1,6 +1,9 @@
 package pl.strachota.task2.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +49,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CachePut(value = "tasks", key = "#id")
     public Task updateTask(Long id, UpdateTaskDTO updatedTask) {
         Task existingTask = this.getTaskById(id);
         existingTask.setTitle(updatedTask.getTitle() != null ? updatedTask.getTitle() : existingTask.getTitle());
@@ -55,6 +59,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CachePut(value = "tasks", key = "#id")
     public Task changeTaskStatus(Long id, TaskStatus newStatus) {
         Task task = this.getTaskById(id);
         if (!task.getStatus().canChangeTo(newStatus)) {
@@ -65,6 +70,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasks", key = "#id")
     public Task getTaskById(Long id) {
         return taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
     }
@@ -76,6 +82,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public void deleteTask(Long id) {
         Task task = getTaskById(id);
         if (task.getStatus().equals(TaskStatus.IN_PROGRESS)) {

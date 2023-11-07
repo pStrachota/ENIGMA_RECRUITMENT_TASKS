@@ -12,3 +12,10 @@ services:
       POSTGRES_USER: admin
       POSTGRES_DB: tasks
 
+  tasks-redis:
+    image: redis
+    container_name: tasks-redis-db
+    restart: always
+    ports:
+      - "6379:6379"
+
