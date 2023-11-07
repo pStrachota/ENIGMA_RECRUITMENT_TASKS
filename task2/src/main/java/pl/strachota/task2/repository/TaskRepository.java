@@ -13,4 +13,6 @@ import java.util.List;
 public interface TaskRepository extends PagingAndSortingRepository<Task, Long>,
         JpaSpecificationExecutor<Task>, JpaRepository<Task, Long> {
 
+    List<Task> findAllByAssignedUsers_Id(Long id);
+
 }
