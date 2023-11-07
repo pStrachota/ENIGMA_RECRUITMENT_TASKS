@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.strachota.task2.dto.task.CreateTaskDTO;
 import pl.strachota.task2.dto.task.UpdateTaskDTO;
+import pl.strachota.task2.exception.CannotChangeStatusException;
+import pl.strachota.task2.exception.TaskNotFoundException;
 import pl.strachota.task2.model.Task;
 import pl.strachota.task2.model.TaskStatus;
 import pl.strachota.task2.model.User;
@@ -56,7 +58,7 @@ public class TaskServiceImpl implements TaskService {
     public Task changeTaskStatus(Long id, TaskStatus newStatus) {
         Task task = this.getTaskById(id);
         if (!task.getStatus().canChangeTo(newStatus)) {
-            throw new RuntimeException("Cannot change status from " + task.getStatus() + " to " + newStatus);
+            throw new CannotChangeStatusException("Cannot change status from " + task.getStatus() + " to " + newStatus);
         }
         task.setStatus(newStatus);
         return taskRepository.save(task);
@@ -64,7 +66,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+        return taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
     }
 
     @Override
@@ -77,7 +79,7 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long id) {
         Task task = getTaskById(id);
         if (task.getStatus().equals(TaskStatus.IN_PROGRESS)) {
-            throw new RuntimeException("Cannot delete task in progress");
+            throw new CannotChangeStatusException("Cannot delete task in progress");
         }
         taskRepository.deleteById(id);
     }

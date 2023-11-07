@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.strachota.task2.dto.user.CreateUserDTO;
 import pl.strachota.task2.dto.user.UpdateUserDTO;
+import pl.strachota.task2.exception.UserNotFoundException;
 import pl.strachota.task2.model.User;
 import pl.strachota.task2.repository.UserRepository;
 import pl.strachota.task2.service.interfaces.UserService;
@@ -48,7 +49,7 @@ public class UserServiceImpl implements UserService {
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id))
-            throw new RuntimeException("User not found");
+            throw new UserNotFoundException("User not found");
         userRepository.deleteById(id);
     }
 
