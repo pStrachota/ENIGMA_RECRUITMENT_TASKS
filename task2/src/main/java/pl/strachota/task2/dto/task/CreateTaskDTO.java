@@ -1,50 +1,46 @@
-package pl.strachota.task2.model;
+package pl.strachota.task2.dto.task;
 
-import jakarta.persistence.*;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import pl.strachota.task2.model.TaskStatus;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 import static pl.strachota.task2.util.properties.AppConstants.MAX_DESCRIPTION_LENGTH;
 import static pl.strachota.task2.util.properties.AppConstants.MAX_TITLE_LENGTH;
 
 
-@Entity
-@NoArgsConstructor
-@Getter
-@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Builder
-@Table(name = "tasks")
-public class Task extends AbstractEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class CreateTaskDTO {
 
     @Size(min = 1, max = MAX_TITLE_LENGTH, message = "Title should be between 1 and" + MAX_TITLE_LENGTH + " characters")
-    @Column(nullable = false)
+    @NotNull(message = "Title cannot be null")
     private String title;
 
     @Size(min = 1, max = MAX_DESCRIPTION_LENGTH, message = "Description should be between 1 and" + MAX_DESCRIPTION_LENGTH + " characters")
+    @NotNull(message = "Description cannot be null")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @NotNull(message = "Status cannot be null")
     private TaskStatus status;
 
     @Future(message = "Due date should be in the future")
-    @Column(nullable = false)
+    @NotNull(message = "Due date cannot be null")
     private LocalDateTime dueDate;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "task_assigned_users",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> assignedUsers = new HashSet<>();
+    @NotNull(message = "At least one user should be assigned")
+    private Set<Long> assignedUserIds;
+
 }
