@@ -11,7 +11,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @SpringBootApplication
+@EnableAsync
 @EnableCaching
+@OpenAPIDefinition(info = @Info(title = "Task API", version = "1.0", description = "Documentation Task API v1.0"))
 public class Task2Application implements WebMvcConfigurer {
 
     public static void main(String[] args) {
