@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.strachota.task2.dto.task.CreateTaskDTO;
 import pl.strachota.task2.dto.task.UpdateTaskDTO;
+import pl.strachota.task2.events.MailSenderPublisher;
 import pl.strachota.task2.exception.CannotChangeStatusException;
 import pl.strachota.task2.exception.TaskNotFoundException;
 import pl.strachota.task2.model.Task;
@@ -34,6 +35,7 @@ import static pl.strachota.task2.util.properties.AppConstants.PAGE_SIZE;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final MailSenderPublisher mailSenderPublisher;
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
 
@@ -55,6 +57,8 @@ public class TaskServiceImpl implements TaskService {
         existingTask.setTitle(updatedTask.getTitle() != null ? updatedTask.getTitle() : existingTask.getTitle());
         existingTask.setDescription(updatedTask.getDescription() != null ? updatedTask.getDescription() : existingTask.getDescription());
         existingTask.setDueDate(updatedTask.getDueDate() != null ? updatedTask.getDueDate() : existingTask.getDueDate());
+        List<String> emailList = existingTask.getAssignedUsers().stream().map(User::getEmail).toList();
+        mailSenderPublisher.publishTaskUpdated(emailList, existingTask.getTitle());
         return taskRepository.save(existingTask);
     }
 
@@ -65,6 +69,8 @@ public class TaskServiceImpl implements TaskService {
         if (!task.getStatus().canChangeTo(newStatus)) {
             throw new CannotChangeStatusException("Cannot change status from " + task.getStatus() + " to " + newStatus);
         }
+        List<String> emailList = task.getAssignedUsers().stream().map(User::getEmail).toList();
+        mailSenderPublisher.publishTaskStatusChanged(emailList, task.getTitle(), task.getStatus(), newStatus);
         task.setStatus(newStatus);
         return taskRepository.save(task);
     }
@@ -78,6 +84,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task createTask(CreateTaskDTO createTaskDTO) {
         Task task = taskMapper.mapToEntity(createTaskDTO);
+        List<String> emailList = task.getAssignedUsers().stream().map(User::getEmail).toList();
+        mailSenderPublisher.publishNewTaskCreated(emailList, task.getTitle(), task.getDescription(), task.getDueDate());
         return taskRepository.save(task);
     }
 
@@ -88,6 +96,8 @@ public class TaskServiceImpl implements TaskService {
         if (task.getStatus().equals(TaskStatus.IN_PROGRESS)) {
             throw new CannotChangeStatusException("Cannot delete task in progress");
         }
+        List<String> emailList = task.getAssignedUsers().stream().map(User::getEmail).toList();
+        mailSenderPublisher.publishTaskDeleted(emailList, task.getTitle());
         taskRepository.deleteById(id);
     }
 
@@ -95,7 +105,9 @@ public class TaskServiceImpl implements TaskService {
     public Task assignUsersToTask(Long taskId, List<Long> userIds) {
         Task task = getTaskById(taskId);
         List<User> assignedUsers = userRepository.findAllById(userIds);
+        List<String> emailList = assignedUsers.stream().map(User::getEmail).toList();
         task.setAssignedUsers(Set.copyOf(assignedUsers));
+        mailSenderPublisher.publishUsersAssignedToTask(emailList, task.getTitle(), task.getDueDate());
         return taskRepository.save(task);
     }
 
