@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  tasks-postgres:
+    image: postgres:15
+    container_name: tasks-postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 9R%49Zf41Ov2
+      POSTGRES_USER: admin
+      POSTGRES_DB: tasks
+
