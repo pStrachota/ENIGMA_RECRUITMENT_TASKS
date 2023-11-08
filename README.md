@@ -57,7 +57,7 @@ For the prod profile, TLS is implemented, visit https://localhost:443/swagger-ui
 
 ## Disclaimer: Hardcoded Sensitive Data
 
-Please note that in this example project, there are several hardcoded values for passwords, sensitive data, and configurations. In a real-world application, it is crucial to handle sensitive information securely, such as using configuration parameters, environment variables, or services like AWS Secret Manager.
+In this example project, there are several hardcoded values for passwords, sensitive data, and configurations. In a real-world application, it is crucial to handle sensitive information securely, such as using configuration parameters, environment variables, or services like AWS Secret Manager.
 
 For the sake of simplicity and to focus on demonstrating the basic functionality of the application, I have left certain configurations as hardcoded values. 
 
