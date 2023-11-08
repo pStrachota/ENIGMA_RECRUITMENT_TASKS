@@ -38,13 +38,13 @@ Now, when you run your application using this configuration in IntelliJ IDEA, it
 #### Build the PostgreSQL and Redis Docker container image:
 
 ```
-docker-compose -f docker-postgres-redis.yml build
+docker-compose -f docker/docker-postgres-redis.yml build
 ```
 
 #### Run the Docker containers:
 
 ```
-docker-compose -f docker-postgres-redis.yml up -d
+docker-compose -f docker/docker-postgres-redis.yml up -d
 ```
 Wait for a moment for the PostgreSQL and Redis databases to start.
 
