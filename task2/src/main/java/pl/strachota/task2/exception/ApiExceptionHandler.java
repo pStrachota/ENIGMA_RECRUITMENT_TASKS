@@ -71,6 +71,26 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiException, new HttpHeaders(), apiException.getHttpStatus());
     }
 
+    @ExceptionHandler(InvalidUsersNumberException.class)
+    public final ResponseEntity<Object> handleTooManyUsersExceptionException(InvalidUsersNumberException ex,
+                                                                             WebRequest request) {
+        ApiException apiException =
+                new ApiException(ex.getLocalizedMessage(), HttpStatus.BAD_REQUEST,
+                        List.of(request.getDescription(false)), LocalDateTime.now());
+
+        return new ResponseEntity<>(apiException, new HttpHeaders(), apiException.getHttpStatus());
+    }
+
+    @ExceptionHandler(InvalidDueDateException.class)
+    public final ResponseEntity<Object> handleTooEarlyDueDateException(InvalidDueDateException ex,
+                                                                       WebRequest request) {
+        ApiException apiException =
+                new ApiException(ex.getLocalizedMessage(), HttpStatus.BAD_REQUEST,
+                        List.of(request.getDescription(false)), LocalDateTime.now());
+
+        return new ResponseEntity<>(apiException, new HttpHeaders(), apiException.getHttpStatus());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public final ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex,
                                                                        WebRequest request) {

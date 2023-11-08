@@ -6,6 +6,7 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.strachota.task2.model.TaskStatus;
@@ -32,7 +33,7 @@ class TasksControllerTest extends BaseTest {
 
     @Test
     @Sql(statements = "DELETE FROM tasks")
-    public void shouldCreateTask() {
+    void shouldCreateTask() {
 
         given()
                 .contentType(ContentType.JSON)
@@ -40,7 +41,7 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.CREATED.value())
                 .contentType(ContentType.JSON);
 
         given()
@@ -49,13 +50,13 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .post("/tasks")
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.CREATED.value())
                 .contentType(ContentType.JSON);
     }
 
     @Test
     @Sql(statements = "DELETE FROM tasks")
-    public void shouldThrowExceptionWhenTaskDueDateIsInvalid() {
+    void shouldThrowExceptionWhenTaskDueDateIsInvalid() {
 
         given()
                 .contentType(ContentType.JSON)
@@ -63,7 +64,7 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.CREATED.value())
                 .contentType(ContentType.JSON);
 
         given()
@@ -72,48 +73,48 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .post("/tasks")
                 .then()
-                .statusCode(400);
+                .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    public void shouldGetAllTasks() {
+    void shouldGetAllTasks() {
         given()
                 .when()
                 .get("/tasks")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .contentType(ContentType.JSON);
     }
 
     @Test
-    public void shouldGetTaskById() {
+    void shouldGetTaskById() {
         given()
                 .when()
                 .get("/tasks/1")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .contentType(ContentType.JSON);
     }
 
     @Test
-    public void shouldUpdateTask() {
+    void shouldUpdateTask() {
         given()
                 .contentType(ContentType.JSON)
                 .body(DataForTests.updateTaskDTO)
                 .when()
                 .put("/tasks/1")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .contentType(ContentType.JSON);
     }
 
     @Test
-    public void shouldDeleteTask() {
+    void shouldDeleteTask() {
         given()
                 .when()
                 .delete("/tasks/1")
                 .then()
-                .statusCode(204)
+                .statusCode(HttpStatus.NO_CONTENT.value())
                 .contentType(ContentType.TEXT);
     }
 
@@ -124,13 +125,12 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .delete("/tasks/{id}")
                 .then()
-                .statusCode(404)
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("exceptionMessage", containsString("Task not found"))
                 .body("httpStatus", equalTo("NOT_FOUND"));
     }
 
     @Test
-
     void shouldChangeTaskStatus_Positive() {
         TaskStatus newStatus = TaskStatus.IN_PROGRESS;
 
@@ -140,7 +140,7 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .patch("/tasks/{id}/change-status")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .body("status", equalTo(newStatus.toString()));
     }
 
@@ -154,7 +154,7 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .patch("/tasks/{id}/change-status")
                 .then()
-                .statusCode(400)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
                 .body("exceptionMessage", containsString("Cannot change status from"))
                 .body("httpStatus", equalTo("BAD_REQUEST"));
     }
@@ -166,31 +166,35 @@ class TasksControllerTest extends BaseTest {
                 .when()
                 .get("/tasks/{id}")
                 .then()
-                .statusCode(404)
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("exceptionMessage", containsString("Task not found"))
                 .body("httpStatus", equalTo("NOT_FOUND"));
     }
 
     @Test
-    void shouldThrowExceptionWhenTryToDeleteTaskWithInProgressStatus() {
+    void shouldThrowInvalidUserNumberException_WhenUserNumberIsInvalid() {
+        given()
+                .contentType(ContentType.JSON)
+                .body(createTaskDTOInvalidUserNumber)
+                .when()
+                .post("/tasks")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("exceptionMessage", containsString("Cannot assign more than 10 users or no users to task"))
+                .body("httpStatus", equalTo("BAD_REQUEST"));
+    }
+
+    @Test
+    void shouldThrowCannotChangeStatusExceptionWhenTryToDeleteTaskWithInProgressStatus() {
         given()
                 .pathParam("id", 3L)
                 .when()
                 .delete("/tasks/{id}")
                 .then()
-                .statusCode(400)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
                 .body("exceptionMessage", containsString("Cannot delete task in progress"))
                 .body("httpStatus", equalTo("BAD_REQUEST"));
     }
 
-//    @Test
-//    public void shouldGetAllTasksByUserId() {
-//        given()
-//                .when()
-//                .get("/tasks/user/1")
-//                .then()
-//                .statusCode(200)
-//                .contentType(ContentType.JSON);
-//    }
 
 }

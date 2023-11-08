@@ -19,13 +19,18 @@ public class DataForTests {
     public static CreateUserDTO createUserDTOInvalidEmail = CreateUserDTO.builder()
             .firstName("Jan")
             .lastName("Kowalski")
-            .email("test@mail.com")
+            .email("ivalidemail")
+            .build();
+
+    public static CreateUserDTO createUserDTOInvalidName = CreateUserDTO.builder()
+            .lastName("Kowalski123")
+            .email("example@mail.com")
             .build();
 
     public static CreateTaskDTO createTaskDTO = CreateTaskDTO.builder()
             .title("Test task")
             .assignedUserIds(Set.of(2L))
-            .dueDate(LocalDateTime.now().plusDays(1))
+            .dueDate(LocalDateTime.now().plusDays(2))
             .status(TaskStatus.TODO)
             .description("Test description")
             .build();
@@ -34,6 +39,14 @@ public class DataForTests {
             .title("Test task")
             .assignedUserIds(Set.of(1L))
             .dueDate(LocalDateTime.now().minusDays(1))
+            .status(TaskStatus.TODO)
+            .description("Test description")
+            .build();
+
+    public static CreateTaskDTO createTaskDTOInvalidUserNumber = CreateTaskDTO.builder()
+            .title("Test task")
+            .assignedUserIds(Set.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L))
+            .dueDate(LocalDateTime.now().plusDays(2))
             .status(TaskStatus.TODO)
             .description("Test description")
             .build();

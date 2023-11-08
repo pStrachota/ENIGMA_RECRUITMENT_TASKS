@@ -15,6 +15,8 @@ import pl.strachota.task2.dto.task.CreateTaskDTO;
 import pl.strachota.task2.dto.task.UpdateTaskDTO;
 import pl.strachota.task2.events.MailSenderPublisher;
 import pl.strachota.task2.exception.CannotChangeStatusException;
+import pl.strachota.task2.exception.InvalidDueDateException;
+import pl.strachota.task2.exception.InvalidUsersNumberException;
 import pl.strachota.task2.exception.TaskNotFoundException;
 import pl.strachota.task2.model.Task;
 import pl.strachota.task2.model.TaskStatus;
@@ -24,6 +26,7 @@ import pl.strachota.task2.repository.UserRepository;
 import pl.strachota.task2.service.interfaces.TaskService;
 import pl.strachota.task2.util.mapper.TaskMapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -53,10 +56,14 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @CachePut(value = "tasks", key = "#id")
     public Task updateTask(Long id, UpdateTaskDTO updatedTask) {
+        if (updatedTask.getDueDate() != null && (updatedTask.getDueDate().isBefore(LocalDateTime.now().plusDays(1)) || updatedTask.getDueDate().isAfter(LocalDateTime.now().plusDays(30)))) {
+            throw new InvalidDueDateException("Due date must be at least one day after creation date and no more than 30 days after creation date");
+        }
         Task existingTask = this.getTaskById(id);
         existingTask.setTitle(updatedTask.getTitle() != null ? updatedTask.getTitle() : existingTask.getTitle());
         existingTask.setDescription(updatedTask.getDescription() != null ? updatedTask.getDescription() : existingTask.getDescription());
         existingTask.setDueDate(updatedTask.getDueDate() != null ? updatedTask.getDueDate() : existingTask.getDueDate());
+
         List<String> emailList = existingTask.getAssignedUsers().stream().map(User::getEmail).toList();
         mailSenderPublisher.publishTaskUpdated(emailList, existingTask.getTitle());
         return taskRepository.save(existingTask);
@@ -83,6 +90,12 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task createTask(CreateTaskDTO createTaskDTO) {
+        if (createTaskDTO.getAssignedUserIds().size() > 10 || createTaskDTO.getAssignedUserIds().isEmpty()) {
+            throw new InvalidUsersNumberException("Cannot assign more than 10 users or no users to task");
+        }
+        if (createTaskDTO.getDueDate().isBefore(LocalDateTime.now().plusDays(1)) || createTaskDTO.getDueDate().isAfter(LocalDateTime.now().plusDays(30))) {
+            throw new InvalidDueDateException("Due date must be at least one day after creation date and no more than 30 days after creation date");
+        }
         Task task = taskMapper.mapToEntity(createTaskDTO);
         List<String> emailList = task.getAssignedUsers().stream().map(User::getEmail).toList();
         mailSenderPublisher.publishNewTaskCreated(emailList, task.getTitle(), task.getDescription(), task.getDueDate());
@@ -105,6 +118,11 @@ public class TaskServiceImpl implements TaskService {
     public Task assignUsersToTask(Long taskId, List<Long> userIds) {
         Task task = getTaskById(taskId);
         List<User> assignedUsers = userRepository.findAllById(userIds);
+
+        if (task.getAssignedUsers().size() + assignedUsers.size() > 10 || assignedUsers.isEmpty()) {
+            throw new InvalidUsersNumberException("Cannot assign more than 10 users or no users to task");
+        }
+
         List<String> emailList = assignedUsers.stream().map(User::getEmail).toList();
         task.setAssignedUsers(Set.copyOf(assignedUsers));
         mailSenderPublisher.publishUsersAssignedToTask(emailList, task.getTitle(), task.getDueDate());

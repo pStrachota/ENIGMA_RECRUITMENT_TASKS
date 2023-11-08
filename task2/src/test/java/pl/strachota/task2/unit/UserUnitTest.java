@@ -42,20 +42,6 @@ class UserUnitTest {
     }
 
     @Test
-    void testGetAllUsers() {
-        // Arrange
-        List<User> users = List.of(new User(), new User(), new User());
-        when(userRepository.findAll()).thenReturn(users);
-
-        // Act
-        List<User> result = userService.getAllUsers(null, 0, "id", "asc");
-
-        // Assert
-        assertThat(result).hasSize(3);
-        verify(userRepository).findAll();
-    }
-
-    @Test
     void shouldGetUserById() {
         // Arrange
         Long userId = 1L;

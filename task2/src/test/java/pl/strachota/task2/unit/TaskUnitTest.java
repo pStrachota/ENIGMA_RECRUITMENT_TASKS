@@ -11,7 +11,10 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.strachota.task2.dto.task.CreateTaskDTO;
 import pl.strachota.task2.dto.task.UpdateTaskDTO;
+import pl.strachota.task2.events.MailSenderPublisher;
 import pl.strachota.task2.exception.CannotChangeStatusException;
+import pl.strachota.task2.exception.InvalidDueDateException;
+import pl.strachota.task2.exception.InvalidUsersNumberException;
 import pl.strachota.task2.exception.TaskNotFoundException;
 import pl.strachota.task2.model.Task;
 import pl.strachota.task2.model.TaskStatus;
@@ -19,6 +22,8 @@ import pl.strachota.task2.repository.TaskRepository;
 import pl.strachota.task2.service.impl.TaskServiceImpl;
 import pl.strachota.task2.util.mapper.TaskMapper;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -38,6 +43,9 @@ class TaskUnitTest {
     private TaskRepository taskRepository;
 
     @Mock
+    private MailSenderPublisher mailSenderPublisher;
+
+    @Mock
     TaskMapper taskMapper;
 
     @Before
@@ -48,7 +56,13 @@ class TaskUnitTest {
     @Test
     void shouldCreateTask() {
         // Arrange
-        CreateTaskDTO createTaskDTO = new CreateTaskDTO();
+        CreateTaskDTO createTaskDTO = CreateTaskDTO.builder()
+                .title("title")
+                .description("description")
+                .status(TaskStatus.TODO)
+                .dueDate(LocalDateTime.now().plusDays(2))
+                .assignedUserIds(new HashSet<>(Arrays.asList(1L, 2L)))
+                .build();
         Task task = new Task();
         when(taskMapper.mapToEntity(any(CreateTaskDTO.class))).thenReturn(task);
         when(taskRepository.save(any(Task.class))).thenReturn(task);
@@ -89,6 +103,7 @@ class TaskUnitTest {
         UpdateTaskDTO updatedTask = UpdateTaskDTO.builder()
                 .title("Updated Task")
                 .description("Updated Description")
+                .dueDate(LocalDateTime.now().plusDays(2))
                 .build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
@@ -156,20 +171,35 @@ class TaskUnitTest {
         verify(taskRepository).save(existingTask);
     }
 
-//    @Test
-//    public void testGetAllTasks() {
-//        // Arrange
-//        List<Task> tasks = List.of(new Task(), new Task(), new Task());
-//        when(taskRepository.findAll()).thenReturn(tasks);
-//
-//        // Act
-//        List<Task> result = taskService.getAllTasks(null, null);
-//
-//        // Assert
-//        assertThat(result).hasSize(3);
-//        verify(taskRepository).findAll();
-//    }
+    @Test
+    void shouldThrowTooEarlyDueDateException_WhenDueDateIsBeforeNowPlusOneDay() {
+        // Arrange
+        CreateTaskDTO invalidDueDateTask = CreateTaskDTO.builder()
+                .title("Title")
+                .description("Description")
+                .dueDate(LocalDateTime.now().plusHours(23))
+                .assignedUserIds(new HashSet<>(Arrays.asList(1L, 2L)))
+                .build();
 
+        // Act and Assert
+        ThrowableAssert.ThrowingCallable callable = () -> taskService.createTask(invalidDueDateTask);
+        Assertions.assertThatThrownBy(callable).isInstanceOf(InvalidDueDateException.class);
+    }
+
+    @Test
+    void shouldThrowManyUsersAssignedException_WhenAssigningMoreThan10User() {
+        // Arrange
+        CreateTaskDTO invalidAssignedUsersTask = CreateTaskDTO.builder()
+                .title("Title")
+                .description("Description")
+                .dueDate(LocalDateTime.now().plusDays(2))
+                .assignedUserIds(new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L)))
+                .build();
+
+        // Act and Assert
+        ThrowableAssert.ThrowingCallable callable = () -> taskService.createTask(invalidAssignedUsersTask);
+        Assertions.assertThatThrownBy(callable).isInstanceOf(InvalidUsersNumberException.class);
+    }
 
     @Test
     void shouldDeleteTask() {

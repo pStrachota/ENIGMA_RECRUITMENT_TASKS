@@ -7,13 +7,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.Matchers.*;
-import static pl.strachota.task2.controller.DataForTests.createUserDTO;
-import static pl.strachota.task2.controller.DataForTests.createUserDTOInvalidEmail;
+import static pl.strachota.task2.controller.DataForTests.*;
 
 class UserControllerTest extends BaseTest {
 
@@ -36,7 +36,7 @@ class UserControllerTest extends BaseTest {
                 .when()
                 .get("/users")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .body("$", hasSize(greaterThan(0)));
     }
 
@@ -49,7 +49,7 @@ class UserControllerTest extends BaseTest {
                 .when()
                 .get("/users/{id}")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpStatus.OK.value())
                 .body("id", equalTo(userId.intValue()));
 
     }
@@ -65,14 +65,14 @@ class UserControllerTest extends BaseTest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(201)
+                .statusCode(HttpStatus.CREATED.value())
                 .contentType(ContentType.JSON);
 
     }
 
     @Test
     @Sql(statements = "DELETE FROM users")
-    void shouldThrowExceptionWhenUserMailIsInvalid() {
+    void shouldThrowException_WhenUserMailIsInvalid() {
 
         given()
                 .contentType(ContentType.JSON)
@@ -80,8 +80,21 @@ class UserControllerTest extends BaseTest {
                 .when()
                 .post("/users")
                 .then()
-                .statusCode(201)
-                .contentType(ContentType.JSON);
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+
+    }
+
+    @Test
+    @Sql(statements = "DELETE FROM users")
+    void shouldThrowException_WhenUserNameIsInvalid() {
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(createUserDTOInvalidName)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value());
 
     }
 
@@ -93,18 +106,18 @@ class UserControllerTest extends BaseTest {
                 .when()
                 .delete("/users/{id}")
                 .then()
-                .statusCode(204);
+                .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
-    void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
+    void shouldThrowUserNotFoundException_WhenUserDoesNotExist() {
         Long userId = 100L;
         given()
                 .pathParam("id", userId)
                 .when()
                 .get("/users/{id}")
                 .then()
-                .statusCode(404)
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body("exceptionMessage", containsString("User not found"));
     }
 
