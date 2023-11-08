@@ -11,6 +11,10 @@ Navigate to the project directory:
 ```
 cd cloned_repository_directory
 ```
+Start the Spring Boot application:
+```
+./mvnw spring-boot:run
+```
 
 ## Configuring the Profile
 
