@@ -39,7 +39,7 @@ public class UserController {
     @GetMapping("/{id}")
     @Operation(summary = "Get user by id")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(id));
     }
 
     @PostMapping
@@ -51,7 +51,7 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "Update user")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO updateUserDTO) {
-        return ResponseEntity.ok(userService.updateUser(id, updateUserDTO));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(id, updateUserDTO));
     }
 
     @DeleteMapping("/{id}")

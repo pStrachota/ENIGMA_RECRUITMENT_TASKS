@@ -3,7 +3,7 @@ VALUES (1, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'John', 'Doe', 'john.doe@exam
        (2, '0f9b7540-581b-4f28-86f1-5310a5b2aa41', 'Jane', 'Smith', 'jane.smith@example.com', 0),
        (3, 'e4eaaaf2-d142-11e1-b3e4-080027620cde', 'Liam', 'Taylor', 'liam.taylor@example.com', 0);
 
-INSERT INTO task (id, uuid, title, description, status, due_date, version)
+INSERT INTO tasks (id, uuid, title, description, status, due_date, version)
 VALUES (1, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'Task 1', 'Description for Task 1', 'TODO', '2023-12-01 12:00:00',
         0),
        (2, '0f9b7540-581b-4f28-86f1-5310a5b2aa41', 'Task 2', 'Description for Task 2', 'DONE',

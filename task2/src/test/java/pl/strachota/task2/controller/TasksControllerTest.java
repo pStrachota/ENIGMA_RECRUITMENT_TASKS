@@ -54,7 +54,7 @@ class TasksControllerTest extends BaseTest {
     }
 
     @Test
-    @Sql(statements = "DELETE FROM task")
+    @Sql(statements = "DELETE FROM tasks")
     public void shouldThrowExceptionWhenTaskDueDateIsInvalid() {
 
         given()
@@ -130,6 +130,7 @@ class TasksControllerTest extends BaseTest {
     }
 
     @Test
+
     void shouldChangeTaskStatus_Positive() {
         TaskStatus newStatus = TaskStatus.IN_PROGRESS;
 

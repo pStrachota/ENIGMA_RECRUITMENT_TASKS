@@ -105,7 +105,7 @@ class UserControllerTest extends BaseTest {
                 .get("/users/{id}")
                 .then()
                 .statusCode(404)
-                .body("message", containsString("User with id " + userId + " not found"));
+                .body("exceptionMessage", containsString("User not found"));
     }
 
 }

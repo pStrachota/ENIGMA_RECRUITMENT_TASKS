@@ -24,7 +24,7 @@ public class DataForTests {
 
     public static CreateTaskDTO createTaskDTO = CreateTaskDTO.builder()
             .title("Test task")
-            .assignedUserIds(Set.of(1L))
+            .assignedUserIds(Set.of(2L))
             .dueDate(LocalDateTime.now().plusDays(1))
             .status(TaskStatus.TODO)
             .description("Test description")

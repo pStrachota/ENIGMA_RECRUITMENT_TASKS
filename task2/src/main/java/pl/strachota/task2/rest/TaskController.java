@@ -31,8 +31,7 @@ public class TaskController {
     public List<Task> getAllTasks(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) TaskStatus taskStatus,
-            @RequestParam(required = false) LocalDateTime dueDate,
+            @RequestParam(required = false) TaskStatus status,
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "id") String sortBy,
             @Parameter(hidden = true) TaskSpec taskSpec,
@@ -54,14 +53,14 @@ public class TaskController {
 
     @PatchMapping("/{id}/change-status")
     @Operation(summary = "Change task status")
-    public ResponseEntity<String> changeTaskStatus(@PathVariable Long id, @RequestParam TaskStatus newStatus) {
-        return ResponseEntity.status(HttpStatus.OK).body("Status changed to " + taskService.changeTaskStatus(id, newStatus));
+    public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam TaskStatus newStatus) {
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.changeTaskStatus(id, newStatus));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get task by id")
     public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTaskById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.getTaskById(id));
     }
 
     @PostMapping
