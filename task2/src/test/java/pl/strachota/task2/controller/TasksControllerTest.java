@@ -11,6 +11,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.strachota.task2.model.TaskStatus;
 
+import java.util.List;
+
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -196,5 +198,31 @@ class TasksControllerTest extends BaseTest {
                 .body("httpStatus", equalTo("BAD_REQUEST"));
     }
 
+    @Test
+    void shouldAssignNewUsersToTask() {
+        List<String> userIds = List.of("8", "9");
+        given()
+                .contentType(ContentType.JSON)
+                .queryParam("userIds", userIds)
+                .when()
+                .patch("/tasks/1/assign")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .contentType(ContentType.JSON);
+    }
+
+    @Test
+    void shouldThrowInvalidUserNumberException_WhenUserNumberIsInvalidWhileAssigningUsersToTask() {
+        List<String> userIds = List.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11");
+        given()
+                .contentType(ContentType.JSON)
+                .queryParam("userIds", userIds)
+                .when()
+                .patch("/tasks/1/assign")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("exceptionMessage", containsString("User john.doe@example.com is already assigned to task"))
+                .body("httpStatus", equalTo("BAD_REQUEST"));
+    }
 
 }

@@ -14,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.strachota.task2.dto.task.CreateTaskDTO;
 import pl.strachota.task2.dto.task.UpdateTaskDTO;
 import pl.strachota.task2.events.MailSenderPublisher;
-import pl.strachota.task2.exception.CannotChangeStatusException;
-import pl.strachota.task2.exception.InvalidDueDateException;
-import pl.strachota.task2.exception.InvalidUsersNumberException;
-import pl.strachota.task2.exception.TaskNotFoundException;
+import pl.strachota.task2.exception.*;
 import pl.strachota.task2.model.Task;
 import pl.strachota.task2.model.TaskStatus;
 import pl.strachota.task2.model.User;
@@ -27,6 +24,7 @@ import pl.strachota.task2.service.interfaces.TaskService;
 import pl.strachota.task2.util.mapper.TaskMapper;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -117,14 +115,22 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task assignUsersToTask(Long taskId, List<Long> userIds) {
         Task task = getTaskById(taskId);
-        List<User> assignedUsers = userRepository.findAllById(userIds);
+        Set<User> currentAssignedUsers = task.getAssignedUsers();
+        List<User> newAssignedUsers = userRepository.findAllById(userIds);
+        newAssignedUsers.forEach(user -> {
+            if (currentAssignedUsers.contains(user)) {
+                throw new UserAlreadyAssignedException("User " + user.getEmail() + " is already assigned to task");
+            }
+        });
 
-        if (task.getAssignedUsers().size() + assignedUsers.size() > 10 || assignedUsers.isEmpty()) {
+        if (task.getAssignedUsers().size() + newAssignedUsers.size() > 10) {
             throw new InvalidUsersNumberException("Cannot assign more than 10 users or no users to task");
         }
 
-        List<String> emailList = assignedUsers.stream().map(User::getEmail).toList();
-        task.setAssignedUsers(Set.copyOf(assignedUsers));
+        List<String> emailList = newAssignedUsers.stream().map(User::getEmail).toList();
+        Set<User> usersToAssign = new HashSet<>(newAssignedUsers);
+        usersToAssign.addAll(currentAssignedUsers);
+        task.setAssignedUsers(usersToAssign);
         mailSenderPublisher.publishUsersAssignedToTask(emailList, task.getTitle(), task.getDueDate());
         return taskRepository.save(task);
     }

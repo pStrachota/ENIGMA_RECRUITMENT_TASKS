@@ -16,7 +16,6 @@ import pl.strachota.task2.repository.UserRepository;
 import pl.strachota.task2.service.impl.UserServiceImpl;
 import pl.strachota.task2.util.mapper.UserMapper;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;

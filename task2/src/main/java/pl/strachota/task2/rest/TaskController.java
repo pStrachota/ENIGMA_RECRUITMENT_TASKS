@@ -15,8 +15,6 @@ import pl.strachota.task2.model.TaskStatus;
 import pl.strachota.task2.service.impl.TaskServiceImpl;
 import pl.strachota.task2.util.annotations.TaskSpec;
 
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -48,7 +46,7 @@ public class TaskController {
     @GetMapping("/user/{id}")
     @Operation(summary = "Get task by user id")
     public ResponseEntity<List<Task>> getTaskByUserId(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTaskByUserId(id));
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.getTaskByUserId(id));
     }
 
     @PatchMapping("/{id}/change-status")
@@ -61,6 +59,12 @@ public class TaskController {
     @Operation(summary = "Get task by id")
     public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(taskService.getTaskById(id));
+    }
+
+    @PatchMapping("/{id}/assign")
+    @Operation(summary = "Assign task to user")
+    public ResponseEntity<Task> assignUsersToTask(@PathVariable Long id, @RequestParam List<Long> userIds) {
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.assignUsersToTask(id, userIds));
     }
 
     @PostMapping
